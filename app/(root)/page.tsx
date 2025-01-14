@@ -4,6 +4,8 @@ import LocalSearch from "@/components/search/LocalSearch";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/constants/routes";
 import QuestionCard from "@/components/cards/QuestionCard";
+import handleError from "@/lib/handlers/error";
+import { api } from "@/lib/api";
 
 const questions = [
   {
@@ -50,7 +52,18 @@ interface SearchParams {
   searchParams: Promise<{ [key: string]: string }>;
 }
 
+const test = async () => {
+  try {
+    return await api.users.getAll();
+  } catch (error) {
+    return handleError(error);
+  }
+};
+
 const Home = async ({ searchParams }: SearchParams) => {
+  let result = await test();
+  console.log(result);
+
   const { query = "" } = await searchParams;
 
   const filteredQuestions = questions.filter((question) =>
