@@ -107,7 +107,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
             description: "Question updated successfully",
           });
 
-          if (result.data) router.push(ROUTES.QUESTION(result.data._id));
+          if (result.data) router.push(ROUTES.QUESTION(result.data?._id));
         } else {
           toast({
             title: `Error ${result.status}`,
@@ -243,7 +243,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
                 <span>Submitting</span>
               </>
             ) : (
-              <>{isEdit ? "Edit Question" : "Ask a Question"}</>
+              <>{isEdit ? "Edit" : "Ask a Question"}</>
             )}
           </Button>
         </div>
