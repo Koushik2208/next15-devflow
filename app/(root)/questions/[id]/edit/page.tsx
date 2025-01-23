@@ -3,7 +3,6 @@ import React from "react";
 
 import { auth } from "@/auth";
 import QuestionForm from "@/components/forms/QuestionForm";
-import { RouteParams } from "@/types/global";
 import { getQuestion } from "@/lib/actions/question.action";
 import ROUTES from "@/constants/routes";
 
