@@ -12,18 +12,15 @@ import {
   AskQuestionSchema,
   EditQuestionSchema,
   GetQuestionSchema,
+  IncrementViewsSchema,
   PaginatedSearchParamsSchema,
 } from "../validations";
-import {
-  ActionResponse,
-  ErrorResponse,
-  PaginatedSearchParams,
-  Question as QuestionType,
-} from "@/types/global";
+import { revalidatePath } from "next/cache";
+import ROUTES from "@/constants/routes";
 
 export async function createQuestion(
   params: CreateQuestionParams
-): Promise<ActionResponse<QuestionType>> {
+): Promise<ActionResponse<Question>> {
   const validationResult = await action({
     params,
     schema: AskQuestionSchema,
@@ -193,7 +190,7 @@ export async function editQuestion(
 
 export async function getQuestion(
   params: GetQuestionParams
-): Promise<ActionResponse<QuestionType>> {
+): Promise<ActionResponse<Question>> {
   const validationResult = await action({
     params,
     schema: GetQuestionSchema,
@@ -207,7 +204,9 @@ export async function getQuestion(
   const { questionId } = validationResult.params!;
 
   try {
-    const question = await Question.findById(questionId).populate("tags");
+    const question = await Question.findById(questionId)
+      .populate("tags")
+      .populate("author", "_id name image");
 
     if (!question) {
       throw new Error("Question not found");
@@ -221,7 +220,7 @@ export async function getQuestion(
 
 export async function getQuestions(
   params: PaginatedSearchParams
-): Promise<ActionResponse<{ questions: QuestionType[]; isNext: boolean }>> {
+): Promise<ActionResponse<{ questions: Question[]; isNext: boolean }>> {
   const ValidationResult = await action({
     params,
     schema: PaginatedSearchParamsSchema,
@@ -290,6 +289,39 @@ export async function getQuestions(
       success: true,
       data: { questions: JSON.parse(JSON.stringify(questions)), isNext },
     };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function incrementViews(
+  params: IncrementViewsParams
+): Promise<ActionResponse<{ views: number }>> {
+  const validationResult = await action({
+    params,
+    schema: IncrementViewsSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { questionId } = validationResult.params!;
+
+  try {
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+      throw new Error("Question not found");
+    }
+
+    question.views += 1;
+
+    await question.save();
+
+    revalidatePath(ROUTES.QUESTION(questionId));
+
+    return { success: true, data: { views: question.views } };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }
