@@ -26,7 +26,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { Question } from "@/types/global";
 
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -97,7 +96,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
     startTransition(async () => {
       if (isEdit && question) {
         const result = await editQuestion({
-          questionId: question._id,
+          questionId: question?._id,
           ...data,
         });
 
